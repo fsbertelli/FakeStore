@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
 
-                URL baseUrl = new URL("https://fakestoreapi.com/products"); //Cria o objeto baseUrl apontando para a API
+                URL baseUrl = new URL("https://fakestoreapi.com/products");//Cria o objeto baseUrl apontando para a API
                 HttpURLConnection conn = (HttpURLConnection) baseUrl.openConnection(); //Abre conexao HTTP com a baseUrl
                 conn.setRequestMethod("GET"); //Define o metodo GET
 
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
                     reader.close();
 
                     //Converte a resposta JSON em um Array de objetos
-                    JSONArray arr = new JSONArray();
+                    JSONArray arr = new JSONArray(response.toString());
 
                     // Lista temporária para guardar os produtos carregados
                     List<Product> fetchedProdutcs = new ArrayList<>();

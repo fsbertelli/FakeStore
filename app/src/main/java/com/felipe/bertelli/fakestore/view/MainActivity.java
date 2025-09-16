@@ -1,4 +1,4 @@
-package com.felipe.bertelli.fakestore;
+package com.felipe.bertelli.fakestore.view;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.felipe.bertelli.fakestore.R;
 import com.felipe.bertelli.fakestore.adapter.ProductAdapter;
 import com.felipe.bertelli.fakestore.model.Product;
 
@@ -15,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private ListView listProducts; // Componente visual para mostrar a lista de produtos activity_main.xml
-    private ProductAdapter productAdapter; // classe ProductAdapter para converter produtos em linhas visuais
-    private List<Product> products; // Lista de produtos obtida da API
+    private ListView listProducts;
+    private ProductAdapter productAdapter;
+    private List<Product> products;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,16 +33,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         listProducts = findViewById(R.id.listProducts);
-        products = new ArrayList<>(); // Inicializa a lista de produtos como vazia
-        productAdapter = new ProductAdapter(this, products); // Cria o adapter com a lista vazia
-        listProducts.setAdapter(productAdapter); // Associa o adapter ao ListView
+        products = new ArrayList<>();
+        productAdapter = new ProductAdapter(this, products);
+        listProducts.setAdapter(productAdapter);
 
         listProducts.setOnItemClickListener((parent, view, position, id) -> {
             Product clickedProduct = products.get(position);
-            showProductDialog(clickedProduct); // Mostra detalhes do produto clicado
+            showProductDialog(clickedProduct);
         });
 
-        fetchProductFromApi(); // Método para buscar produtos da API
+        fetchProductFromApi();
     }
 
     private void fetchProductFromApi() {
@@ -52,42 +52,35 @@ public class MainActivity extends AppCompatActivity {
         new Thread(() -> {
             try {
 
-                URL baseUrl = new URL("https://fakestoreapi.com/products");//Cria o objeto baseUrl apontando para a API
-                HttpURLConnection conn = (HttpURLConnection) baseUrl.openConnection(); //Abre conexao HTTP com a baseUrl
-                conn.setRequestMethod("GET"); //Define o metodo GET
+                URL baseUrl = new URL("https://fakestoreapi.com/products");
+                HttpURLConnection conn = (HttpURLConnection) baseUrl.openConnection();
+                conn.setRequestMethod("GET");
 
-                int responseCode = conn.getResponseCode(); // Pega o codigo HTTP da resposta
+                int responseCode = conn.getResponseCode();
 
-                if(responseCode == 200){ //Se o codigo for 200 quer dizer que o servidor responder
+                if (responseCode == 200) {
 
-                    // Se resposta for OK, lê o corpo da resposta (JSON)
                     BufferedReader reader = new BufferedReader(
                             new InputStreamReader(conn.getInputStream()));
                     StringBuilder response = new StringBuilder();
                     String line;
 
-                    // Lê linha por linha (montando a resposta completa)
-                    while((line = reader.readLine()) != null) response.append(line);
+                    while ((line = reader.readLine()) != null) response.append(line);
                     reader.close();
 
-                    //Converte a resposta JSON em um Array de objetos
                     JSONArray arr = new JSONArray(response.toString());
 
-                    // Lista temporária para guardar os produtos carregados
                     List<Product> fetchedProdutcs = new ArrayList<>();
 
-                    //Percorre cada objeto do Array Json (arr)
                     for (int i = 0; i < arr.length(); i++) {
                         JSONObject obj = arr.getJSONObject(i);
-                        // Cria objeto Product e preenche com os campos do JSON
                         Product p = new Product();
                         p.id = obj.getInt("id");
                         p.title = obj.getString("title");
                         p.price = obj.getDouble("price");
-                        // Adiciona o produto na lista temporária
                         fetchedProdutcs.add(p);
                     }
-                    runOnUiThread(()->{
+                    runOnUiThread(() -> {
                         products.clear();
                         products.addAll(fetchedProdutcs);
                         productAdapter.notifyDataSetChanged();
@@ -96,8 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     showError("Erro ao buscar produtos. HTTP STATUS CODE: " + responseCode);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 showError("Erro: " + e.getMessage());
             }
@@ -105,25 +97,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // Função para exibir mensagem de erro na tela
     private void showError(String messageError) {
-        // Tudo que é dinamico na tela deve ser feito na UI Thread
-        runOnUiThread(()->{
-          findViewById(R.id.progress).setVisibility(View.GONE);
+        runOnUiThread(() -> {
+            findViewById(R.id.progress).setVisibility(View.GONE);
             TextView textError = findViewById(R.id.textError);
             textError.setText(messageError);
             textError.setVisibility(View.VISIBLE);
         });
     }
 
-    // Função para mostrar detalhes do produto clicado nele
-    private void showProductDialog(Product p){
-        new AlertDialog.Builder(this)// Cria um dialog
-                .setTitle(p.title) // Título: nome do produto
+    private void showProductDialog(Product p) {
+        new AlertDialog.Builder(this)
+                .setTitle(p.title)
                 .setMessage("Categoria: " + p.category + "\n" +
-                            "Preço: R$ " + p.price
+                        "Preço: R$ " + p.price
                 )
-                .setPositiveButton("OK", null) // Botão OK para fechar o dialog
-                .show();  // Exibe o dialog
+                .setPositiveButton("OK", null)
+                .show();
     }
 }
